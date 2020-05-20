@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Administrator Dashboard</title>
+    <script>
+      var admin = JSON.parse(localStorage.getItem("user"));
+      if (admin == undefined) {
+        window.location.href = "/";
+      }
+      if (admin["user_type"] != "admin") {
+        window.location.href = "/";
+      }
+    </script>
+    <!-- Bootstrap CSS CDN -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    />
+    <!-- Our Custom CSS -->
+    <link rel="stylesheet" href="../static/assets/style2.css" />
+    <!-- Scrollbar Custom CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css"
+    />
+    <style>
+      canvas {
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+      }
+      #customers {
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      #customers td,
+      #customers th {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+
+      #customers tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+
+      #customers tr:hover {
+        background-color: #ddd;
+      }
+
+      #customers th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #4caf50;
+        color: white;
+      }
+      .modal-body .form-horizontal .col-sm-2,
+      .modal-body .form-horizontal .col-sm-10 {
+        width: 100%;
+      }
+
+      .modal-body .form-horizontal .control-label {
+        text-align: left;
+      }
+      .modal-body .form-horizontal .col-sm-offset-2 {
+        margin-left: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Sidebar Holder -->
+      <nav id="sidebar" style="overflow: scroll;">
+        <div class="sidebar-header">
+          <h3 id="student-name">Administrator</h3>
+        </div>
+
+        <ul class="list-unstyled components" id="feedback-form-types">
+          <li class="form-type active">
+            <a href="?content_type=surveys">MANAGE SURVEYS</a>
+          </li>
+          <li class="form-type" id="manage-question">
+            <a href="?content_type=questions">MANAGE QUESTIONS</a>
+          </li>
+          <li class="form-type" onclick="show_submissions(this)">
+            <a href="javascript:void(0)">USERS SUBMISSIONS</a>
+          </li>
+        </ul>
+
+        <ul class="list-unstyled components">
+          <li
+            onclick="localStorage.removeItem('user');window.location.reload()"
+          >
+            <a href="javascript:void(0)">LOGOUT</a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Page Content Holder -->
+      <div id="content">
+        <div>
+          <div id="quiz">
+            <div id="managable">
+              <button
+                class="btn btn-warning"
+                data-toggle="modal"
+                data-target="#myModalNorm"
+              >
+                Add New
+              </button>
+              <br /><br />
+              <table id="customers" style="width:100%;"></table>
+            </div>
+            <div id="submissions_table" style="display: none;">
+              <table class="table">
+                <thead class="thead-dark" style="background-color:#212529">
+                  <tr style="color: #fff;">
+                    <th scope="col">#</th>
+                    <th scope="col">Question</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Answer</th>
+                    <th scope="col">Correct</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for data in submission_data %}
+                  <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td>{{ data.question.question }}</td>
+                    <td>{{ data.user.full_name }}</td>
+                    <td>{{ data.user.email }}</td>
+                    <td>{{ data.answer.option | safe }}</td>
+                    <td>{{ data.is_correct }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="myModalNorm"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="myModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+              <span aria-hidden="true">&times;</span>
+              <span class="sr-only">Close</span>
+            </button>
+            <h4 class="modal-title" id="myModalLabel">
+              Add New
+            </h4>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="modal-body">
+            <form role="form" id="add_new_form"></form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Bootstrap Js CDN -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- jQuery Custom Scroller CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script>
+      $('#sidebarCollapse').on('click', function () {
+          $('#sidebar, #content').toggleClass('active');
+          $('.collapse.in').toggleClass('in');
+          $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+      });
+      var list = {{listData|safe}}
+
+      var data_type = location.search.split('=')[1]
+      if(data_type=='questions'){
+          $('.form-type').removeClass('active')
+          $('#manage-question').addClass('active')
+      }else{
+          data_type='survey';
+      }
+
+      function show_submissions(e){
+          $('.form-type').removeClass('active')
+          $(e).addClass('active')
+          $('#managable').hide()
+          $('#submissions_table').show()
+      }
+
+      function constructTable(selector) {
+
+          // Getting the all column names
+          var cols = Headers(list, selector);
+
+          // Traversing the JSON data
+          for (var i = 0; i < list.length; i++) {
+              var row = $('<tr/>');
+              for (var colIndex = 0; colIndex < cols.length; colIndex++)
+              {
+                  if(typeof(list[i][cols[colIndex]])=="object"){
+                      var val = list[i][cols[colIndex]];
+
+                      val.forEach(function(e){
+                          if (val == null) val = "";
+                              row.append($('<td/>').html(e['option']).attr('style',(e['is_correct']?'background-color : #bfeda8':'')));
+                      })
+
+                  }else{
+                      var val = ""+list[i][cols[colIndex]];
+
+                      // If there is any key, which is matching
+                      // with the column name
+                      if (val == null) val = "";
+                          row.append($('<td/>').html(val));
+                  }
+              }
+              row.append($('<td/>').html('<a class="delete" id="delete_'+list[i]['id']+'" href="javascript:void(0)" ><img src="https://img.icons8.com/carbon-copy/2x/refresh.png" style="width:20px;height:20px;"/></a>'));
+              // Adding each row to the table
+              $(selector).append(row);
+          }
+      }
+
+      function Headers(list, selector) {
+          var columns = [];
+          var header = $('<tr/>');
+
+          for (var i = 0; i < list.length; i++) {
+              var row = list[i];
+
+              for (var k in row) {
+                  if ($.inArray(k, columns) == -1) {
+                      columns.push(k);
+                      // Creating the header
+                      if(k=='options')
+                          header.append($('<th/>').html(k).attr('colspan',4));
+                      else
+                          header.append($('<th/>').html(k));
+                  }
+              }
+          }
+          header.append($('<th/>').html("toggle"));
+
+          // Appending the header to the table
+          $(selector).append(header);
+          return columns;
+      }
+
+      constructTable('#customers')
+
+
+      $('.delete').click(function(){
+          $.ajax({
+              url: "/"+data_type+"/"+$(this).attr('id').split("_")[1],
+              type: "DELETE",
+              dataType: "json",
+              contentType: "application/json"
+          }).done(function(res){
+              window.location.reload()
+          });
+      })
+
+      $(document).ready(function(){
+          if(data_type=='questions'){
+
+              $('#add_new_form').append('<div class="form-group">\
+                              <label for="question">QUESTION</label>\
+                              <input type="text" class="form-control"\
+                              id="question" placeholder="Enter Question"/>\
+                          </div><div class="form-group">\
+                      <label for="survey">SURVEY</label>\
+                      <input type="text" class="form-control"\
+                      id="survey" placeholder="Enter Survey"/>\
+                  </div><div class="form-group">\
+                      <label for="options">OPTIONS</label>\
+                      <input type="text" class="form-control"\
+                      id="option1" placeholder="Enter Option 1"/>\
+                      <input type="text" class="form-control"\
+                      id="option2" placeholder="Enter Option 2"/>\
+                      <input type="text" class="form-control"\
+                      id="option3" placeholder="Enter Option 3"/>\
+                      <input type="text" class="form-control"\
+                      id="option4" placeholder="Enter Option 4"/>\
+                  </div><div class="form-group">\
+                      <label for="correct">CORRECT ANSWER</label>\
+                      <input type="text" class="form-control"\
+                      id="correct" placeholder="Enter position of correct answer"/>\
+                  </div>');
+
+          }else{
+                  $('#add_new_form').append('<div class="form-group">\
+                              <label for="name">NAME</label>\
+                              <input type="text" class="form-control"\
+                              id="name" placeholder="Enter Name"/>\
+                          </div><div class="form-group">\
+                      <label for="description">DESCRIPTION</label>\
+                      <input type="text" class="form-control"\
+                      id="description" placeholder="Enter Description"/>\
+                  </div>');
+          }
+          $('#add_new_form').append('<button id="add_new_submit" class="btn btn-default">Submit</button>')
+
+          $('#add_new_submit').click(function(e){
+              e.preventDefault();
+              var data_to_send = {}
+
+              if(data_type=='questions'){
+                  data_to_send['question'] = $('#question').val()
+                  data_to_send['survey'] = $('#survey').val().toUpperCase().trim()
+                  data_to_send['options'] = [$('#option1').val(),$('#option2').val(),$('#option3').val(),$('#option4').val()]
+                  data_to_send['correct'] = $('#correct').val()
+              }else{
+                  data_to_send['name'] = $('#name').val().toUpperCase().trim()
+                  data_to_send['description'] = $('#description').val()
+              }
+
+              $.ajax({
+                  url: "/"+data_type+"/new",
+                  type: "POST",
+                  dataType: "json",
+                  data: JSON.stringify(data_to_send),
+                  contentType: "application/json"
+              }).done(function(res){
+                  window.location.reload()
+              });
+
+          });
+      })
+    </script>
+  </body>
+</html>

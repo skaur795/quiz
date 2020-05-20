@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Quiz </title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" href="{{ url_for('static',filename='styles/favicon.png') }}">
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<script>
+	localStorage.removeItem("submit")
+	var user = JSON.parse(localStorage.getItem("user"));
+	if(user==undefined){
+		window.location.href="/";
+	}
+	if(user["user_type"]!="user"){
+		window.location.href="/";
+	}
+	if(window.location.search.split("=")[1]==undefined){
+		window.location.href = "?id="+user['id']
+	}
+</script>
+<style>
+	.header {
+  overflow: hidden;
+  background-color: #f1f1f1;
+  padding: 20px 10px;
+}
+
+/* Style the header links */
+.header a {
+  float: left;
+  color: black;
+  text-align: center;
+  padding: 12px;
+  text-decoration: none;
+  font-size: 18px;
+  line-height: 25px;
+  border-radius: 4px;
+}
+
+/* Style the logo link (notice that we set the same value of line-height and font-size to prevent the header to increase when the font gets bigger */
+.header a.logo {
+  font-size: 25px;
+  font-weight: bold;
+}
+
+/* Change the background color on mouse-over */
+.header a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Style the active/current link*/
+.header a.active {
+  background-color: dodgerblue;
+  color: white;
+}
+
+/* Float the link section to the right */
+.header-right {
+  float: right;
+}
+
+/* Add media queries for responsiveness - when the screen is 500px wide or less, stack the links on top of each other */
+@media screen and (max-width: 500px) {
+  .header a {
+    float: none;
+    display: block;
+    text-align: left;
+  }
+  .header-right {
+    float: none;
+  }
+}
+</style>
+<body>
+	<div class="header">
+		<a href="javascript:void(0)" class="logo"></a>
+		<div class="header-right">
+			<a class="active" href="javascript:void(0)" onclick="localStorage.removeItem('user');window.location.reload()">Logout</a>
+		</div>
+	</div>
+	<div class="main_wrapper">
+		<div class="quiz_categroy">
+			<div class="inner_content_categroy">
+				{% if listSurvey|length > 0 %}
+					<h2 class="main_title">Please Select Your Quiz</h2>
+					<ul class="course-list">
+						{% for e in listSurvey %}
+							<li><a href="{{e[0]}}/mcq"><h3>{{e[1]}}</h3></a></li>
+						{% endfor %}
+					</ul>
+				{% else %}
+					<h2 class="main_title">You've Attempted all the quizes</h2>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	<script>
+		document.getElementsByClassName('logo')[0].textContent = user['full_name']
+	</script>
+</body>
+</html>

@@ -20,6 +20,8 @@ Quiz with backend in Flask
 
 `python app.py`
 
+### Application will run on http://localhost:5000
+
 ### Login use "admin@admin.com/password" to create surveys and questions
 
 ### For Testing

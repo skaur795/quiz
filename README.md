@@ -22,6 +22,8 @@ Use db name as "quiz" only
 
 `python app.py`
 
+If not able to run using "python app.py", try "python3 app.py"
+
 ### Application will run on http://localhost:5000
 
 ### Login use "admin@admin.com/password" to create surveys and questions

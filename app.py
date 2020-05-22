@@ -46,7 +46,7 @@ class SurveyModel(db.Model):
 
     @classmethod
     def get_surveys(cls, user_id):
-        result = db.engine.execute("SELECT * FROM quizdb.survey where is_active=1 and id not in (select survey_id from questions where id in (select question_id from submissions where user_id="+user_id+"))")
+        result = db.engine.execute("SELECT * FROM quiz.survey where is_active=1 and id not in (select survey_id from questions where id in (select question_id from submissions where user_id="+user_id+"))")
         result_as_list = result.fetchall()
         return result_as_list
     

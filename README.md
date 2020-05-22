@@ -6,7 +6,7 @@ Quiz with backend in Flask
 
 ### Create an empty database in mysql
 
-`create database <dbname>`
+`create database quiz`
 
 ### Install the requirements
 
@@ -15,6 +15,8 @@ Quiz with backend in Flask
 ### Change DB credentials for sqlAlchemy (Line No. 7)
 
 `app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://<username>:<password>@localhost/<dbname>'`
+
+Use db name as "quiz" only
 
 ### Run Flask Application
 
